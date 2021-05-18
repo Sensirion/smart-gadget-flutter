@@ -87,9 +87,8 @@ class BleDevice {
   Future setNotification(BluetoothCharacteristic c, Function callback) async {
     if (!c.isNotifying) {
       await _gatLock.synchronized(() {
-        device.setNotifyValue(c, true);
-        valueChangedSubscriptions[c.uuid] =
-            device.onValueChanged(c).listen(callback);
+        c.setNotifyValue(true);
+        valueChangedSubscriptions[c.uuid] = c.value.listen(callback);
       });
     }
   }
