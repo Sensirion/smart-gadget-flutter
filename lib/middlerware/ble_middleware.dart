@@ -86,19 +86,8 @@ void _stopScan(Store<AppState> store) {
 void handleBleInit(Store<AppState> store) {
   final flutterBlue = FlutterBlue.instance;
 
-  // init Bluetooth
-  flutterBlue.state.then((s) {
-    if (s == BluetoothState.on) {
-      store.dispatch(new BleOnAction());
-    } else if (s == BluetoothState.off) {
-      store.dispatch(new BleOffAction());
-    } else {
-      store.dispatch(new BleFailedAction());
-    }
-  });
-
   // monitor bluetooth state
-  flutterBlue.onStateChanged().listen((s) {
+  flutterBlue.state.listen((s) {
     if (s == BluetoothState.on) {
       store.dispatch(new BleOnAction());
     } else if (s == BluetoothState.turningOff) {
@@ -142,9 +131,7 @@ void handleDeviceConnection(Store<AppState> store, BleDevice device) {
   device.deviceState = BluetoothDeviceState.connecting;
   store.dispatch(new BleDeviceConnectingAction(device: device));
 
-  device.deviceConnection = flutterBlue
-      .connect(device.device, timeout: Duration(seconds: 60))
-      .listen((s) {
+  device.deviceConnection = device.device.state.listen((s) {
     device.deviceState = s;
 
     if (s == BluetoothDeviceState.connected) {
@@ -172,6 +159,7 @@ void handleDeviceConnection(Store<AppState> store, BleDevice device) {
     print("onError: " + error.toString());
     handleDeviceDisconnect(store, device);
   });
+  device.device.connect(timeout: Duration(seconds: 60));
 }
 
 void handleDeviceDisconnect(Store<AppState> store, BleDevice device) {
